@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Mirror;
 using UnityEngine;
 
 namespace ItTakesTwo
@@ -17,6 +18,7 @@ namespace ItTakesTwo
         //protected int m_onStateChangedHash;
         
         protected Player m_player;
+        private int _lastStateHash;
         
         protected virtual void InitializePlayer()
         {
@@ -37,7 +39,11 @@ namespace ItTakesTwo
             InitializeParametersHash();
             InitializeAnimatorTriggers();
         }
-        protected virtual void LateUpdate() => HandleAnimatorParameters();
+        protected virtual void LateUpdate()
+        {
+            HandleAnimatorParameters();
+        }
+        
         protected virtual void HandleAnimatorParameters()
         {
             var lateralSpeed = m_player.lateralVelocity.magnitude;

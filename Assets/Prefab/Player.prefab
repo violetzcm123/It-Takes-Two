@@ -50,6 +50,7 @@ GameObject:
   - component: {fileID: 3716342806600117415}
   - component: {fileID: 2148214564148977393}
   - component: {fileID: 4344313979543608498}
+  - component: {fileID: -4292235291637755025}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -202,12 +203,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8480336143083286814}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8ff3ba0becae47b8b9381191598957c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  syncDirection: 0
+  syncDirection: 1
   syncMode: 0
   syncInterval: 0.08
   target: {fileID: 4378365008838510733}
@@ -236,7 +237,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8480336143083286814}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b1299529861df6747822e8f6aac6c87e, type: 3}
   m_Name: 
@@ -246,6 +247,26 @@ MonoBehaviour:
   syncInterval: 0
   player: {fileID: 8443531486977476782}
   inputs: {fileID: 3203380170827842003}
+  reportInterval: 0.1
+  maxSpeedMultiplier: 1.2
+  teleportThreshold: 2.5
+--- !u!114 &-4292235291637755025
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8480336143083286814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f6f3bf89aa97405989c802ba270f815, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  clientAuthority: 1
+  animator: {fileID: 7405116980622911861}
 --- !u!1001 &3860462090636882957
 PrefabInstance:
   m_ObjectHideFlags: 0

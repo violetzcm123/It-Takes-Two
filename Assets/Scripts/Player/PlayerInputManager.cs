@@ -15,6 +15,7 @@ namespace ItTakesTwo
         protected float m_movementDirectionUnlockTime;
 
         protected const string k_mouseDeviceName = "Mouse";
+        protected bool m_inputsEnabled = true;
 
         protected virtual void CacheActions()
         {
@@ -23,15 +24,32 @@ namespace ItTakesTwo
             
         }
 
-        protected virtual void Awake() => CacheActions();
+        protected virtual void Awake()
+        {
+            if (actions != null)
+            {
+                actions = Instantiate(actions); // 每个玩家独立一份
+            }
+            CacheActions();
+        }
 
         protected virtual void Start()
         {
             m_camera = Camera.main;
-            actions.Enable();
+            if (m_inputsEnabled)
+            {
+                actions?.Enable();
+            }
         }
 
-        protected virtual void OnEnable() => actions?.Enable();
+        protected virtual void OnEnable()
+        {
+            if (m_inputsEnabled)
+            {
+                actions?.Enable();
+            }
+        }
+
         protected virtual void OnDisable() => actions?.Disable();
 
         public virtual Vector3 GetMovementDirection()
@@ -87,6 +105,18 @@ namespace ItTakesTwo
             }
 
             return m_look.activeControl.device.name.Equals(k_mouseDeviceName);
+        }
+        public void SetInputsEnabled(bool enabled)
+        {
+            m_inputsEnabled = enabled;
+            if (enabled)
+            {
+                actions?.Enable();
+            }
+            else
+            {
+                actions?.Disable();
+            }
         }
 
         protected float RemapToDeadzone(float value, float deadzone) => (value - deadzone) / (1 - deadzone);

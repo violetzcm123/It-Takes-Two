@@ -42,6 +42,19 @@ namespace ItTakesTwo
             var target = Quaternion.LookRotation(direction, Vector3.up);
             transform.rotation = Quaternion.Slerp(transform.rotation, target, rotationSpeed * Time.deltaTime);
         }
+        public void ApplyCorrection(Vector3 pos, Vector3 vel, float hardSnapDistance = 2f, float lerpSpeed = 10f)
+        {
+            var delta = (transform.position - pos).magnitude;
+            if (delta > hardSnapDistance)
+            {
+                transform.position = pos;
+                velocity = vel;
+                return;
+            }
+
+            transform.position = Vector3.Lerp(transform.position, pos, Time.deltaTime * lerpSpeed);
+            velocity = Vector3.Lerp(velocity, vel, Time.deltaTime * lerpSpeed);
+        }
         
     }
 }

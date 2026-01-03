@@ -7,58 +7,92 @@ namespace ItTakesTwo
     {
         [SerializeField] private Player player;
         [SerializeField] private PlayerInputManager inputs;
+        
+        [Header("Server Validation")]
+        public float reportInterval = 0.1f;
+        public float maxSpeedMultiplier = 1.2f;
+        public float teleportThreshold = 2.5f;
+
+        private float m_nextReportTime;
+
+        private Vector3 m_lastServerPos;
+        private float m_lastServerTime;
 
         private void Awake()
         {
             if (!player) player = GetComponent<Player>();
             if (!inputs) inputs = GetComponent<PlayerInputManager>();
         }
-
-        public override void OnStartClient()
-        {
-            // 只禁用“非本地玩家”的 Player 脚本
-            if (!isLocalPlayer && player != null)
-                player.enabled = false;
-
-            // 本地玩家确保启用（防止被别处禁掉）
-            if (isLocalPlayer && player != null)
-                player.enabled = true;
-
-        }
-
+        
         [ClientCallback]
         private void Update()
         {
-            if (Time.frameCount % 60 == 0)
-            {
-                Debug.Log($"[NetDriver] isLocalPlayer={isLocalPlayer} inputs={(inputs!=null)} actionsEnabled={inputs?.actions?.enabled}");
-            }
-            if (!isLocalPlayer || inputs == null) return;
+            if (!isLocalPlayer) return;
+            if (Time.time < m_nextReportTime) return;
 
-            var move = inputs.GetMovementDirection();
-            var moveCam = inputs.GetMovementCameraDirection();
-            //var look = inputs.GetLookDirection();
-            
+            m_nextReportTime = Time.time + reportInterval;
 
-            //CmdSetInput(move, moveCam, look);
+            var pos = transform.position;
+            var vel = player != null ? player.velocity : Vector3.zero;
+
+            CmdReportState(pos, vel, Time.time);
         }
 
         [Command]
-        private void CmdSetInput(Vector3 move, Vector3 moveCam, Vector3 look)
+        private void CmdReportState(Vector3 pos, Vector3 vel, float time)
         {
-            if (inputs != null)
+            if (m_lastServerTime > 0f)
             {
-                //inputs.SetNetworkInput(move, moveCam, look);
+                var dt = time - m_lastServerTime;
+                if (dt > 0f)
+                {
+                    var speed = (pos - m_lastServerPos).magnitude / dt;
+                    var maxSpeed = (player != null ? player.stats.current.topSpeed : 1f) * maxSpeedMultiplier;
+
+                    var tooFast = speed > maxSpeed;
+                    var teleported = (pos - m_lastServerPos).magnitude > teleportThreshold;
+
+                    if (tooFast || teleported)
+                    {
+                        var correctPos = m_lastServerPos;
+                        var correctVel = Vector3.zero;
+                        TargetCorrectState(connectionToClient, correctPos, correctVel);
+                        return;
+                    }
+                }
             }
+
+            m_lastServerPos = pos;
+            m_lastServerTime = time;
+        }
+
+        [TargetRpc]
+        private void TargetCorrectState(NetworkConnectionToClient conn, Vector3 pos, Vector3 vel)
+        {
+            if (player != null)
+            {
+                player.ApplyCorrection(pos, vel);
+            }
+        }
+        public override void OnStartClient()
+        {
+            if (!isLocalPlayer && inputs != null)
+                inputs.SetInputsEnabled(false);
+
+            if (isLocalPlayer && inputs != null)
+                inputs.SetInputsEnabled(true);
         }
         public override void OnStartLocalPlayer()
         {
+            if (inputs != null)
+                inputs.SetInputsEnabled(true);
+
             var cam = FindObjectOfType<PlayerCamera>();
             if (cam != null)
             {
-                //cam.BindPlayer(GetComponent<Player>());
+                cam.BindPlayer(player);
             }
         }
-
+        
     }
 }

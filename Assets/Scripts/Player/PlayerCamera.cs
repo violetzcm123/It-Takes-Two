@@ -121,6 +121,7 @@ namespace ItTakesTwo
 
 		protected virtual void HandleOrbit()
 		{
+			if (!canOrbit || player == null || player.inputs == null) return;
 			if (canOrbit)// 是否允许旋转
 			{
 				var direction = player.inputs.GetLookDirection();
@@ -152,6 +153,10 @@ namespace ItTakesTwo
 			m_target.rotation = Quaternion.Euler(m_cameraTargetPitch, m_cameraTargetYaw, 0.0f);
 			m_cameraBody.CameraDistance = m_cameraDistance;
 		}
+		private void Awake()
+		{
+			enabled = false;
+		}
 
 		// 重写Start方法
 		protected virtual void Start()
@@ -166,6 +171,8 @@ namespace ItTakesTwo
 
 		protected virtual void LateUpdate()
 		{
+			if (player == null || m_target == null || m_camera == null) return;
+
 			HandleOrbit();
 			HandleVelocityOrbit();
 			HandleOffset();
@@ -186,5 +193,25 @@ namespace ItTakesTwo
 
 			return Mathf.Clamp(angle, min, max);
 		}
+		public void BindPlayer(Player target)
+		{
+			if (target == null) return;
+
+			player = target;
+
+			if (m_camera == null || m_cameraBody == null || m_brain == null)
+			{
+				InitializeComponents();
+			}
+
+			if (m_target == null)
+			{
+				InitializeFollower();
+			}
+
+			InitializeCamera();
+			enabled = true;
+		}
+
     }
 }
