@@ -5,53 +5,54 @@ using UnityEngine;
 namespace ItTakesTwo
 {
     [RequireComponent(typeof(Player))]
-    public class PlayerAnimator: MonoBehaviour
+    public class PlayerAnimator : NetworkBehaviour
     {
         public Animator animator;
         [Header("Parameters Names")]
         public string stateName = "State";
-        
+
         [Header("Settings")]
         public float minLateralAnimationSpeed = 0.5f;
-        
+
         protected int m_stateHash;
-        //protected int m_onStateChangedHash;
-        
         protected Player m_player;
-        private int _lastStateHash;
-        
-        protected virtual void InitializePlayer()
-        {
-            m_player = GetComponent<Player>();
-            
-        }
-        protected virtual void InitializeParametersHash()
-        {
-            m_stateHash = Animator.StringToHash(stateName);
-        }
-        protected virtual void InitializeAnimatorTriggers()
-        {
-            //m_player.states.events.onChange.AddListener(() => animator.SetTrigger(m_onStateChangedHash));
-        }
+
+        [SyncVar(hook = nameof(OnStateIndexChanged))]
+        private int m_stateIndex = -1;
+
         protected virtual void Start()
         {
-            InitializePlayer();
-            InitializeParametersHash();
-            InitializeAnimatorTriggers();
+            m_player = GetComponent<Player>();
+            m_stateHash = Animator.StringToHash(stateName);
         }
+
         protected virtual void LateUpdate()
         {
-            HandleAnimatorParameters();
-        }
-        
-        protected virtual void HandleAnimatorParameters()
-        {
-            var lateralSpeed = m_player.lateralVelocity.magnitude;
-            var verticalSpeed = m_player.verticalVelocity.y;
-            var lateralAnimationSpeed = Mathf.Max(minLateralAnimationSpeed, lateralSpeed / m_player.stats.current.topSpeed);
+            if (!isLocalPlayer)
+                return;
 
-            animator.SetInteger(m_stateHash, m_player.states.index);
-            
+            if (m_player == null || m_player.states == null)
+                return;
+
+            var currentIndex = m_player.states.index;
+            if (currentIndex != m_stateIndex)
+            {
+                CmdSetStateIndex(currentIndex);
+            }
+        }
+
+        [Command]
+        private void CmdSetStateIndex(int index)
+        {
+            m_stateIndex = index;
+        }
+
+        private void OnStateIndexChanged(int oldIndex, int newIndex)
+        {
+            if (animator == null)
+                return;
+
+            animator.SetInteger(m_stateHash, newIndex);
         }
     }
 }

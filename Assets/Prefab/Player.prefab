@@ -124,6 +124,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: baa9e99cc6cf48f0b44f3e810bb4ca2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   animator: {fileID: 7405116980622911861}
   stateName: State
   minLateralAnimationSpeed: 0.5
@@ -265,7 +268,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  clientAuthority: 1
+  clientAuthority: 0
   animator: {fileID: 7405116980622911861}
 --- !u!1001 &3860462090636882957
 PrefabInstance:
