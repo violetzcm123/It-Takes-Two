@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace ItTakesTwo
 {
@@ -34,6 +34,8 @@ namespace ItTakesTwo
         }
 
         public bool isGrounded { get; protected set; } = true;
+        // 客户端关闭本地模拟，改由服务器状态快照驱动
+        public bool simulationEnabled = true;
         
         public float accelerationMultiplier { get; set; } = 1f;
         
@@ -42,6 +44,10 @@ namespace ItTakesTwo
         public float turningDragMultiplier { get; set; } = 1f;
 
         public float decelerationMultiplier { get; set; } = 1f;
+        public void SetGrounded(bool grounded)
+        {
+            isGrounded = grounded;
+        }
     }
 
     public class Entity<T> : Entity where T : Entity<T>
@@ -86,6 +92,8 @@ namespace ItTakesTwo
 
         protected virtual void Update()
         {
+            if (!simulationEnabled)
+                return;
             if (controller != null)
             {
                 isGrounded = controller.isGrounded;

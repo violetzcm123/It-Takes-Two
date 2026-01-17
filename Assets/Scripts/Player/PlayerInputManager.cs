@@ -16,6 +16,10 @@ namespace ItTakesTwo
 
         protected const string k_mouseDeviceName = "Mouse";
         protected bool m_inputsEnabled = true;
+        
+        // 服务器权威：客户端输入可被网络移动方向覆盖
+        protected bool m_useNetworkMovement;
+        protected Vector3 m_networkMovementWorld;
 
         protected virtual void CacheActions()
         {
@@ -55,6 +59,7 @@ namespace ItTakesTwo
         public virtual Vector3 GetMovementDirection()
         {
             if (Time.time < m_movementDirectionUnlockTime) return Vector3.zero;
+            if (m_useNetworkMovement) return m_networkMovementWorld;
 
             var value = m_movement.ReadValue<Vector2>();
             return GetAxisWithCrossDeadZone(value);
@@ -62,6 +67,8 @@ namespace ItTakesTwo
 
         public virtual Vector3 GetMovementCameraDirection()
         {
+            if (m_useNetworkMovement) return m_networkMovementWorld;
+
             var direction = GetMovementDirection();
 
             if (direction.sqrMagnitude > 0)
@@ -117,6 +124,17 @@ namespace ItTakesTwo
             {
                 actions?.Disable();
             }
+        }
+        public void SetNetworkMovement(Vector3 movementWorld)
+        {
+            m_useNetworkMovement = true;
+            m_networkMovementWorld = movementWorld;
+        }
+
+        public void ClearNetworkMovement()
+        {
+            m_useNetworkMovement = false;
+            m_networkMovementWorld = Vector3.zero;
         }
 
         protected float RemapToDeadzone(float value, float deadzone) => (value - deadzone) / (1 - deadzone);

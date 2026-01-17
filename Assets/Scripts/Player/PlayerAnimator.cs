@@ -28,7 +28,7 @@ namespace ItTakesTwo
 
         protected virtual void LateUpdate()
         {
-            if (!isLocalPlayer)
+            if (!isServer)
                 return;
 
             if (m_player == null || m_player.states == null)
@@ -37,14 +37,8 @@ namespace ItTakesTwo
             var currentIndex = m_player.states.index;
             if (currentIndex != m_stateIndex)
             {
-                CmdSetStateIndex(currentIndex);
+                m_stateIndex = currentIndex;
             }
-        }
-
-        [Command]
-        private void CmdSetStateIndex(int index)
-        {
-            m_stateIndex = index;
         }
 
         private void OnStateIndexChanged(int oldIndex, int newIndex)

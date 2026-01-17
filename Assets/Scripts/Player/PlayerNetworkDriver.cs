@@ -8,15 +8,20 @@ namespace ItTakesTwo
         [SerializeField] private Player player;
         [SerializeField] private PlayerInputManager inputs;
         
-        [Header("Server Validation")]
-        public float reportInterval = 0.1f;
-        public float maxSpeedMultiplier = 1.2f;
-        public float teleportThreshold = 2.5f;
+        [Header("Input / State Sync")]
+        public float inputSendRate = 1f / 30f;
+        public float stateSendRate = 1f / 20f;
 
-        private float m_nextReportTime;
+        [Header("Client Smoothing")]
+        public float interpolationSpeed = 12f;
+        public float snapDistance = 3f;
 
-        private Vector3 m_lastServerPos;
-        private float m_lastServerTime;
+        private float m_nextInputSendTime;
+        private float m_nextStateSendTime;
+
+        private Vector3 m_targetPos;
+        private Quaternion m_targetRot;
+        private Vector3 m_targetVel;
 
         private void Awake()
         {
@@ -24,64 +29,23 @@ namespace ItTakesTwo
             if (!inputs) inputs = GetComponent<PlayerInputManager>();
         }
         
-        [ClientCallback]
-        private void Update()
+        public override void OnStartServer()
         {
-            if (!isLocalPlayer) return;
-            if (Time.time < m_nextReportTime) return;
-
-            m_nextReportTime = Time.time + reportInterval;
-
-            var pos = transform.position;
-            var vel = player != null ? player.velocity : Vector3.zero;
-
-            CmdReportState(pos, vel, Time.time);
+            if (player != null) player.simulationEnabled = true;
+            if (inputs != null) inputs.ClearNetworkMovement();
         }
 
-        [Command]
-        private void CmdReportState(Vector3 pos, Vector3 vel, float time)
-        {
-            if (m_lastServerTime > 0f)
-            {
-                var dt = time - m_lastServerTime;
-                if (dt > 0f)
-                {
-                    var speed = (pos - m_lastServerPos).magnitude / dt;
-                    var maxSpeed = (player != null ? player.stats.current.topSpeed : 1f) * maxSpeedMultiplier;
-
-                    var tooFast = speed > maxSpeed;
-                    var teleported = (pos - m_lastServerPos).magnitude > teleportThreshold;
-
-                    if (tooFast || teleported)
-                    {
-                        var correctPos = m_lastServerPos;
-                        var correctVel = Vector3.zero;
-                        TargetCorrectState(connectionToClient, correctPos, correctVel);
-                        return;
-                    }
-                }
-            }
-
-            m_lastServerPos = pos;
-            m_lastServerTime = time;
-        }
-
-        [TargetRpc]
-        private void TargetCorrectState(NetworkConnectionToClient conn, Vector3 pos, Vector3 vel)
-        {
-            if (player != null)
-            {
-                player.ApplyCorrection(pos, vel);
-            }
-        }
         public override void OnStartClient()
         {
+            if (!isServer && player != null) player.simulationEnabled = false;
+
             if (!isLocalPlayer && inputs != null)
                 inputs.SetInputsEnabled(false);
 
             if (isLocalPlayer && inputs != null)
                 inputs.SetInputsEnabled(true);
         }
+
         public override void OnStartLocalPlayer()
         {
             if (inputs != null)
@@ -92,6 +56,90 @@ namespace ItTakesTwo
             {
                 cam.BindPlayer(player);
             }
+        }
+
+        private void FixedUpdate()
+        {
+            if (isLocalPlayer)
+            {
+                ClientSendInput();
+            }
+
+            if (isServer)
+            {
+                ServerSendState();
+            }
+        }
+
+        [ClientCallback]
+        private void ClientSendInput()
+        {
+            if (Time.time < m_nextInputSendTime) return;
+            m_nextInputSendTime = Time.time + inputSendRate;
+
+            var moveDir = inputs != null ? inputs.GetMovementCameraDirection() : Vector3.zero;
+            if (moveDir.sqrMagnitude > 1f) moveDir = moveDir.normalized;
+
+            CmdSendInput(moveDir);
+        }
+
+        [Command(channel = Channels.Unreliable)]
+        private void CmdSendInput(Vector3 moveDirWorld)
+        {
+            if (inputs == null) return;
+
+            // Host 模式保持本地输入给服务器模拟，避免被网络覆盖
+            if (!isLocalPlayer)
+            {
+                inputs.SetNetworkMovement(moveDirWorld);
+            }
+        }
+
+        [ServerCallback]
+        private void ServerSendState()
+        {
+            if (Time.time < m_nextStateSendTime) return;
+            m_nextStateSendTime = Time.time + stateSendRate;
+
+            var pos = transform.position;
+            var rot = transform.rotation;
+            var vel = player != null ? player.velocity : Vector3.zero;
+            var grounded = player != null && player.isGrounded;
+
+            RpcReceiveState(pos, rot, vel, grounded);
+        }
+
+        [ClientRpc(channel = Channels.Unreliable)]
+        private void RpcReceiveState(Vector3 pos, Quaternion rot, Vector3 vel, bool grounded)
+        {
+            if (isServer) return;
+
+            m_targetPos = pos;
+            m_targetRot = rot;
+            m_targetVel = vel;
+
+            if (player != null)
+            {
+                player.SetGrounded(grounded);
+            }
+        }
+
+        private void Update()
+        {
+            if (isServer) return;
+            if (player == null) return;
+
+            if (Vector3.Distance(transform.position, m_targetPos) > snapDistance)
+            {
+                transform.position = m_targetPos;
+            }
+            else
+            {
+                transform.position = Vector3.Lerp(transform.position, m_targetPos, Time.deltaTime * interpolationSpeed);
+            }
+
+            transform.rotation = Quaternion.Slerp(transform.rotation, m_targetRot, Time.deltaTime * interpolationSpeed);
+            player.velocity = Vector3.Lerp(player.velocity, m_targetVel, Time.deltaTime * interpolationSpeed);
         }
         
     }
