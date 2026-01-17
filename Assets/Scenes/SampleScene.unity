@@ -307,7 +307,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 0}
-  maxDistance: 15
+  maxDistance: 5
   initialAngle: 20
   heightOffset: 1
   verticalUpDeadZone: 0.15
