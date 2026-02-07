@@ -5,10 +5,10 @@ namespace ItTakesTwo
     public class Player:Entity<Player>
     {
         public PlayerInputManager inputs { get; protected set; }
-        public PlayerStatsManager stats { get; protected set; }
+        public PlayerAttributesManager Attributes { get; protected set; }
 
         protected virtual void InitializeInputs() => inputs = GetComponent<PlayerInputManager>();
-        protected virtual void InitializeStats() => stats = GetComponent<PlayerStatsManager>();
+        protected virtual void InitializeStats() => Attributes = GetComponent<PlayerAttributesManager>();
 
         protected override void Awake()
         {
@@ -19,10 +19,10 @@ namespace ItTakesTwo
 
         public virtual void Accelerate(Vector3 direction)
         {
-            var turningDrag = isGrounded  ? stats.current.runningTurningDrag : stats.current.turningDrag;
-            var acceleration = isGrounded  ? stats.current.runningAcceleration : stats.current.acceleration;
-            var finalAcceleration = isGrounded ? acceleration : stats.current.airAcceleration;
-            var topSpeed = stats.current.topSpeed;
+            var turningDrag = isGrounded  ? Attributes.current.runningTurningDrag : Attributes.current.turningDrag;
+            var acceleration = isGrounded  ? Attributes.current.runningAcceleration : Attributes.current.acceleration;
+            var finalAcceleration = isGrounded ? acceleration : Attributes.current.airAcceleration;
+            var topSpeed = Attributes.current.topSpeed;
 
             Accelerate(direction, turningDrag, finalAcceleration, topSpeed);
             
@@ -30,10 +30,10 @@ namespace ItTakesTwo
 
         public virtual void Friction()
         {
-            Decelerate(stats.current.friction);
+            Decelerate(Attributes.current.friction);
         }
 
-        public virtual void FaceDirectionSmooth(Vector3 direction) => FaceDirection(direction, stats.current.rotationSpeed);
+        public virtual void FaceDirectionSmooth(Vector3 direction) => FaceDirection(direction, Attributes.current.rotationSpeed);
 
         protected virtual void FaceDirection(Vector3 direction, float rotationSpeed)
         {

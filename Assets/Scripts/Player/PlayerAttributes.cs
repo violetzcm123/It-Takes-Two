@@ -2,8 +2,8 @@
 
 namespace ItTakesTwo
 {
-    [CreateAssetMenu(fileName = "New Stats", menuName = "Stats")]
-    public class PlayerStats: EntityStats<PlayerStats>
+    [CreateAssetMenu(fileName = "New Attributes", menuName = "Attributes")]
+    public class PlayerAttributes: EntityAttributes<PlayerAttributes>
     {
         [Header("General Stats")]
 		public float pushForce = 4f;

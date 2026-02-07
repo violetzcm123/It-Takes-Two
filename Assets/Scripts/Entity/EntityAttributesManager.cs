@@ -2,7 +2,7 @@
 
 namespace ItTakesTwo
 {
-    public class EntityStatsManager<T>: MonoBehaviour where T : EntityStats<T>
+    public class EntityAttributesManager<T>: MonoBehaviour where T : EntityAttributes<T>
     {
         public T[] stats;
 

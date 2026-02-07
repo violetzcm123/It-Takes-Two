@@ -4,6 +4,7 @@ namespace ItTakesTwo
 {
     public class Entity : MonoBehaviour
     {
+        
         public CharacterController controller { get; protected set; }
         /// <summary>
         /// Returns the collider height of this Entity.
@@ -13,12 +14,18 @@ namespace ItTakesTwo
         /// The center of the Character Controller collider.
         /// </summary>
         public Vector3 center => controller.center;
+        public float radius => controller.radius;
         /// <summary>
         /// Returns the original height of this Entity.
         /// </summary>
         public float originalHeight { get; protected set; }
         public Vector3 position => transform.position + center;
+        //用原始身高的脚底位置来判断，避免角色蹲下/缩放碰撞体时导致误判
         public Vector3 unsizedPosition => position - transform.up * height * 0.5f + transform.up * originalHeight * 0.5f;
+        //脚步判定参考点，用于判断某个点是否在角色脚下
+        public Vector3 stepPosition => position - transform.up * (height * 0.5f - controller.stepOffset);
+        
+        protected readonly float m_groundOffset = 0.1f;
         public Vector3 velocity { get; set; }
 
         public Vector3 lateralVelocity
@@ -47,6 +54,20 @@ namespace ItTakesTwo
         public void SetGrounded(bool grounded)
         {
             isGrounded = grounded;
+        }
+        public virtual bool SphereCast(Vector3 direction, float distance, int layer = Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.Ignore)
+        {
+            return SphereCast(direction, distance, out _, layer, queryTriggerInteraction);
+        }
+
+        public virtual bool SphereCast(Vector3 direction, float distance,
+            out RaycastHit hit, int layer = Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.Ignore)
+        {
+            var castDistance = Mathf.Abs(distance - radius);
+            return Physics.SphereCast(position, radius, direction,
+                out hit, castDistance, layer, queryTriggerInteraction);
         }
     }
 
@@ -90,24 +111,39 @@ namespace ItTakesTwo
             transform.position += velocity * Time.deltaTime;
         }
 
+        protected virtual void HandleGround()
+        {
+            var distance = (height * 0.5f) + m_groundOffset;
+            
+            if(SphereCast(Vector3.down, distance,out var hit)&& verticalVelocity.y <= 0)
+            {
+                if (!isGrounded)
+                {
+                    if (EvaluateLanding(hit))
+                    {
+                        EnterGround(hit);
+                    }
+                }
+            }
+            else
+            {
+                ExitGround();
+            }
+        }
+
         protected virtual void Update()
         {
             if (!simulationEnabled)
                 return;
-            if (controller != null)
-            {
-                isGrounded = controller.isGrounded;
-            }
-
-            if (states != null)
+            if (controller.enabled)
             {
                 HandleStates();
+                HandleController();
+                HandleGround();
             }
-
-            HandleController();
         }
 
-        public virtual void Accelerate(Vector3 direction, float turningDrag, float acceleration, float topSpeed)
+        protected virtual void Accelerate(Vector3 direction, float turningDrag, float acceleration, float topSpeed)
         {
             if (direction.sqrMagnitude > 0)
             {
@@ -129,10 +165,36 @@ namespace ItTakesTwo
             }
         }
 
-        public virtual void Decelerate(float deceleration)
+        protected virtual void Decelerate(float deceleration)
         {
             var delta = deceleration * decelerationMultiplier * Time.deltaTime;
             lateralVelocity = Vector3.MoveTowards(lateralVelocity, Vector3.zero, delta);
+        }
+
+        protected virtual bool EvaluateLanding(RaycastHit hit)
+        {
+            return IsPointUnderStep(hit.point);
+        }
+
+        protected virtual bool IsPointUnderStep(Vector3 point)=> stepPosition.y > point.y;
+        protected virtual void EnterGround(RaycastHit hit)
+        {
+            if (!isGrounded)
+            {
+                isGrounded = true;
+                Debug.Log("Entering ground");
+            }
+        }
+
+        protected virtual void ExitGround()
+        {
+            if (isGrounded)
+            {
+                isGrounded = false;
+                transform.parent = null;
+                verticalVelocity = Vector3.Max(verticalVelocity, Vector3.zero);
+                
+            }
         }
     }
 }

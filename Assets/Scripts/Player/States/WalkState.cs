@@ -15,7 +15,7 @@ namespace ItTakesTwo
             {
                 var dot = Vector3.Dot(inputDirection, player.lateralVelocity);
 
-                if (dot >= player.stats.current.brakeThreshold)
+                if (dot >= player.Attributes.current.brakeThreshold)
                 {
                     player.Accelerate(inputDirection);
                     player.FaceDirectionSmooth(player.lateralVelocity);

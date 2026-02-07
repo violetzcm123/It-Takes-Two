@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 1275208951339365195}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0.55, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -49,7 +49,6 @@ GameObject:
   - component: {fileID: 3203380170827842003}
   - component: {fileID: 3716342806600117415}
   - component: {fileID: 4344313979543608498}
-  - component: {fileID: -371691298889397613}
   m_Layer: 0
   m_Name: may
   m_TagString: Untagged
@@ -221,31 +220,6 @@ MonoBehaviour:
   interpolationSpeed: 12
   snapDistance: 3
   predictionBufferSize: 64
---- !u!114 &-371691298889397613
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8480336143083286814}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5cdcbbe2f2d90204fb2c9d8857c74768, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  syncDirection: 0
-  syncMode: 0
-  syncInterval: 0
-  auditInterval: 0.5
-  summaryInterval: 10
-  warnPosError: 0.2
-  failPosError: 0.5
-  warnRotError: 5
-  failRotError: 15
-  warnVelError: 0.5
-  failVelError: 1.5
-  failCountThreshold: 3
-  logOnHost: 1
 --- !u!1001 &3928689857164209237
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -262,7 +236,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: e7264e28aaa45ee4e809eb53c691d657,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.46
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e7264e28aaa45ee4e809eb53c691d657,
         type: 3}

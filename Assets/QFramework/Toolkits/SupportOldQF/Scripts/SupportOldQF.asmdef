@@ -4,7 +4,8 @@
         "QFramework.CoreKit",
         "ResKit",
         "UIKit",
-        "AudioKit"
+        "AudioKit",
+        "QFramework"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],
