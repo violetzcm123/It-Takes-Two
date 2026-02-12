@@ -19,6 +19,10 @@ namespace ItTakesTwo
         /// Returns the original height of this Entity.
         /// </summary>
         public float originalHeight { get; protected set; }
+        /// <summary>
+		/// Returns the last frame this Entity was grounded.
+		/// </summary>
+		public float lastGroundTime { get; protected set; }
         public Vector3 position => transform.position + center;
         //用原始身高的脚底位置来判断，避免角色蹲下/缩放碰撞体时导致误判
         public Vector3 unsizedPosition => position - transform.up * height * 0.5f + transform.up * originalHeight * 0.5f;
@@ -45,6 +49,7 @@ namespace ItTakesTwo
         public bool simulationEnabled = true;
         
         public float accelerationMultiplier { get; set; } = 1f;
+        public float gravityMultiplier { get; set; } = 1f;
         
         public float topSpeedMultiplier { get; set; } = 1f;
 
@@ -73,8 +78,6 @@ namespace ItTakesTwo
 
     public class Entity<T> : Entity where T : Entity<T>
     {
-        
-
         public EntityStateManager<T> states { get; protected set; }
         
         protected virtual void InitializeController()
@@ -182,7 +185,6 @@ namespace ItTakesTwo
             if (!isGrounded)
             {
                 isGrounded = true;
-                Debug.Log("Entering ground");
             }
         }
 

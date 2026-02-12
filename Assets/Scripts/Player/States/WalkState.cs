@@ -9,6 +9,9 @@ namespace ItTakesTwo
 
         protected override void OnStep(Player player)
         {
+            player.Gravity();
+            player.Jump();
+            player.Fall();
             var inputDirection = player.inputs.GetMovementCameraDirection();
             
             if (inputDirection.sqrMagnitude > 0)

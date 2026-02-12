@@ -10,11 +10,13 @@ namespace ItTakesTwo
         public Animator animator;
         [Header("Parameters Names")]
         public string stateName = "State";
+        public string verticalSpeedName = "Vertical Speed";
 
         [Header("Settings")]
         public float minLateralAnimationSpeed = 0.5f;
 
         protected int m_stateHash;
+        protected int m_verticalSpeedHash;
         protected Player m_player;
 
         [SyncVar(hook = nameof(OnStateIndexChanged))]
@@ -23,8 +25,13 @@ namespace ItTakesTwo
         protected virtual void Start()
         {
             m_player = GetComponent<Player>();
-            m_stateHash = Animator.StringToHash(stateName);
+            InitializeParametersHash();
         }
+        protected virtual void InitializeParametersHash()
+		{
+			m_stateHash = Animator.StringToHash(stateName);
+			m_verticalSpeedHash = Animator.StringToHash(verticalSpeedName);
+		}
 
         protected virtual void LateUpdate()
         {
@@ -39,6 +46,8 @@ namespace ItTakesTwo
             {
                 m_stateIndex = currentIndex;
             }
+            var verticalSpeed = m_player.verticalVelocity.y;
+            animator.SetFloat(m_verticalSpeedHash, verticalSpeed);
         }
 
         private void OnStateIndexChanged(int oldIndex, int newIndex)

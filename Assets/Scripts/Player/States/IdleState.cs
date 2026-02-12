@@ -9,7 +9,9 @@ namespace ItTakesTwo
 
         protected override void OnStep(Player player)
         {
-            
+            player.Gravity();
+            player.Jump();
+            player.Fall();
             player.Friction();
 
             var inputDirection = player.inputs.GetMovementDirection();

@@ -9,10 +9,12 @@ namespace ItTakesTwo
 
         protected InputAction m_movement;
         protected InputAction m_look;
+        protected InputAction m_jump;
 
         protected Camera m_camera;
 
         protected float m_movementDirectionUnlockTime;
+        protected float? m_lastJumpTime;
 
         protected const string k_mouseDeviceName = "Mouse";
         protected bool m_inputsEnabled = true;
@@ -21,10 +23,13 @@ namespace ItTakesTwo
         protected bool m_useNetworkMovement;
         protected Vector3 m_networkMovementWorld;
 
+        protected const float k_jumpBuffer = 0.15f;
+
         protected virtual void CacheActions()
         {
             m_movement = actions["Move"];
             m_look = actions["Look"];
+            m_jump = actions["Jump"];
             
         }
 
@@ -43,6 +48,13 @@ namespace ItTakesTwo
             if (m_inputsEnabled)
             {
                 actions?.Enable();
+            }
+        }
+        protected virtual void Update()
+        {
+            if (m_jump.WasPressedThisFrame())
+            {
+                m_lastJumpTime = Time.time;
             }
         }
 
@@ -113,6 +125,19 @@ namespace ItTakesTwo
 
             return m_look.activeControl.device.name.Equals(k_mouseDeviceName);
         }
+        public virtual bool GetJumpDown()
+		{
+			if (m_lastJumpTime != null &&
+				Time.time - m_lastJumpTime < k_jumpBuffer)
+			{
+				m_lastJumpTime = null;
+				return true;
+			}
+
+			return false;
+		}
+
+		public virtual bool GetJumpUp() => m_jump.WasReleasedThisFrame();
         public void SetInputsEnabled(bool enabled)
         {
             m_inputsEnabled = enabled;

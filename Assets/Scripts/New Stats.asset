@@ -40,7 +40,7 @@ MonoBehaviour:
   runningTurningDrag: 14
   multiJumps: 1
   coyoteJumpThreshold: 0.15
-  maxJumpHeight: 17
+  maxJumpHeight: 30
   minJumpHeight: 10
   crouchHeight: 1
   crouchFriction: 10

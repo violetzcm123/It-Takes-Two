@@ -128,6 +128,7 @@ MonoBehaviour:
   syncInterval: 0
   animator: {fileID: 7489230225284485572}
   stateName: State
+  verticalSpeedName: Vertical Speed
   minLateralAnimationSpeed: 0.5
 --- !u!114 &9035666308114370200
 MonoBehaviour:
@@ -154,6 +155,7 @@ MonoBehaviour:
   states:
   - ItTakesTwo.IdleState
   - ItTakesTwo.WalkState
+  - ItTakesTwo.FallState
 --- !u!114 &7300295344700583121
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -166,7 +168,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9844dbbeaf144359bfbe1ef103021a5a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stats:
+  Attributes:
   - {fileID: 11400000, guid: dad7ddb97cb70a745bc5988ff6a6f1ac, type: 2}
 --- !u!114 &3203380170827842003
 MonoBehaviour:

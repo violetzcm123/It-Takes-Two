@@ -4,7 +4,7 @@ namespace ItTakesTwo
 {
     public class EntityAttributesManager<T>: MonoBehaviour where T : EntityAttributes<T>
     {
-        public T[] stats;
+        public T[] Attributes;
 
         /// <summary>
         /// The instance of the current activated Stats.
@@ -17,20 +17,20 @@ namespace ItTakesTwo
         /// <param name="to">The desired index of the Stats you want.</param>
         public virtual void Change(int to)
         {
-            if (to >= 0 && to < stats.Length)
+            if (to >= 0 && to < Attributes.Length)
             {
-                if (current != stats[to])
+                if (current != Attributes[to])
                 {
-                    current = stats[to];
+                    current = Attributes[to];
                 }
             }
         }
 
         protected virtual void Start()
         {
-            if (stats.Length > 0)
+            if (Attributes.Length > 0)
             {
-                current = stats[0];
+                current = Attributes[0];
             }
         }
     }

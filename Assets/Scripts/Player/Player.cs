@@ -6,6 +6,7 @@ namespace ItTakesTwo
     {
         public PlayerInputManager inputs { get; protected set; }
         public PlayerAttributesManager Attributes { get; protected set; }
+		public int jumpCounter { get; protected set; }
 
         protected virtual void InitializeInputs() => inputs = GetComponent<PlayerInputManager>();
         protected virtual void InitializeStats() => Attributes = GetComponent<PlayerAttributesManager>();
@@ -32,6 +33,53 @@ namespace ItTakesTwo
         {
             Decelerate(Attributes.current.friction);
         }
+        public virtual void Fall()
+		{
+			if (!isGrounded)
+			{
+				states.Change<FallState>();
+			}
+		}
+        
+		public virtual void Gravity()
+		{
+			if (!isGrounded && verticalVelocity.y > -Attributes.current.gravityTopSpeed)
+			{
+				var speed = verticalVelocity.y;
+				var force = verticalVelocity.y > 0 ? Attributes.current.gravity : Attributes.current.fallGravity;
+				speed -= force * gravityMultiplier * Time.deltaTime;
+				speed = Mathf.Max(speed, -Attributes.current.gravityTopSpeed);
+				verticalVelocity = new Vector3(0, speed, 0);
+			}
+		}
+
+		public virtual void Jump()
+		{
+			var canMultiJump = (jumpCounter > 0) && (jumpCounter < Attributes.current.multiJumps);
+			var canCoyoteJump = (jumpCounter == 0) && (Time.time < lastGroundTime + Attributes.current.coyoteJumpThreshold);
+			
+			
+			if (isGrounded || canMultiJump || canCoyoteJump)
+			{
+				if (inputs.GetJumpDown())
+				{
+					
+					Jump(Attributes.current.maxJumpHeight);
+				}
+			}
+
+			if (inputs.GetJumpUp() && (jumpCounter > 0) && (verticalVelocity.y > Attributes.current.minJumpHeight))
+			{
+				verticalVelocity = Vector3.up * Attributes.current.minJumpHeight;
+			}
+		}
+
+		public virtual void Jump(float height)
+		{
+			jumpCounter++;
+			verticalVelocity = Vector3.up * height;
+			states.Change<FallState>();
+		}
 
         public virtual void FaceDirectionSmooth(Vector3 direction) => FaceDirection(direction, Attributes.current.rotationSpeed);
 
